@@ -1,0 +1,190 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+```{r}
+library(acs)
+library(tigris)
+library(dplyr)
+library(leaflet)
+library(stringr)
+```
+
+```{r}
+key <- "322b2b42a6c7e168c44e1ab3a725a6d2f5abcaa9"
+
+tracts <- tracts(state = "DC")
+```
+
+```{r}
+api.key.install(key = key)
+
+
+geo <- geo.make(state = 11, county = 1, tract = "*")
+
+median.age <- acs.fetch(endyear = 2009, span = 5, geography = geo, table.number = "B01002", col.names = "pretty")
+
+names(attributes(median.age))
+
+attr(median.age, "acs.colnames")
+
+med.age.df <- data.frame(paste0(str_pad(median.age@geography$state, 2, "left", pad = "0"),
+                                        str_pad(median.age@geography$county, 3, "left", pad = "0"),
+                                        str_pad(median.age@geography$tract, 6, "left", pad = "0")),
+                         median.age@estimate[,c("Median Age by Sex: Median age -- Total:")],
+                         stringsAsFactors = FALSE)
+
+
+rownames(med.age.df) <- 1:nrow(med.age.df)   
+colnames(med.age.df) <- c("GEOID", "medianAge09")
+```
+
+```{r}
+med.age.merge <- geo_join(tracts, med.age.df, "GEOID", "GEOID")
+
+med.age.merge <- med.age.merge[med.age.merge$ALAND>0,]
+```
+
+
+```{r}
+acs.data.age <- function(year) {
+  library(acs)
+  library(tigris)
+  library(dplyr)
+  library(leaflet)
+  library(stringr)
+  key <- "322b2b42a6c7e168c44e1ab3a725a6d2f5abcaa9"
+  tracts <- tracts(state = "DC")
+  api.key.install(key = key)
+  geo <- geo.make(state = 11, county = 1, tract = "*")
+  median.age <- acs.fetch(endyear = year, span = 5, geography = geo, table.number = "B01002", col.names = "pretty")
+  names(attributes(median.age))
+  attr(median.age, "acs.colnames")
+  med.age.df <- data.frame(paste0(str_pad(median.age@geography$state, 2, "left", pad = "0"),
+                                        str_pad(median.age@geography$county, 3, "left", pad = "0"),
+                                        str_pad(median.age@geography$tract, 6, "left", pad = "0")),
+                         median.age@estimate[,c("Median Age by Sex: Median age -- Total:")],
+                         stringsAsFactors = FALSE)
+  rownames(med.age.df) <- 1:nrow(med.age.df)   
+  colnames(med.age.df) <- c("GEOID", paste0("medAge",year))
+  return(med.age.df)
+  head(med.age.df)
+}
+```
+
+```{r}
+
+popup <- paste0("GEOID: ", med.age.merge$GEOID, "<br>", "Median Age (2009):<br> ", med.age.merge$medianAge09, " years old")
+
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = med.age.merge$medianAge09)
+  
+leaflet() %>% 
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(data = med.age.merge,
+              fillColor = ~pal(med.age.merge$medianAge09),
+              fillOpacity = 0.7,
+              weight = 0.2,
+              smoothFactor = 0.2,
+              popup = popup) %>%
+  addLegend(pal = pal,
+            values = med.age.merge$medianAge09,
+            position = "bottomright",
+            title = "Median Age<br>(2009): ")
+```
+
+
+```{r}
+ make.map <- function(geoid, year, value) {
+ popup <- paste0("GEOID: ", geoid, "<br>", "Median Age (", year, "):<br> ", value, " years old")
+  
+  pal <- colorNumeric(
+    palette = "YlGnBu",
+    domain = value)
+    
+  leaflet() %>% 
+    addProviderTiles("CartoDB.Positron") %>% 
+    addPolygons(data = df,
+                fillColor = ~pal(value),
+                fillOpacity = 0.7,
+                weight = 0.2,
+                smoothFactor = 0.2,
+                popup = popup) %>%
+    addLegend(pal = pal,
+              values = value,
+              position = "bottomright",
+              title = paste0("Median Age<br>", paste0(year, ":") ))
+}
+```
+
+```{r}
+
+```
+
+```{r}
+popup <- paste0("GEOID: ", med.age.merge.12$GEOID, "<br>", "Median Age (2012):<br> ", med.age.merge.12$medAge2012, " years old")
+
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = med.age.merge.12$medAge2012)
+  
+leaflet() %>% 
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(data = med.age.merge.12,
+              fillColor = ~pal(medAge12$medAge2012),
+              fillOpacity = 0.7,
+              weight = 0.2,
+              smoothFactor = 0.2,
+              popup = popup) %>%
+  addLegend(pal = pal,
+            values = med.age.merge.12$medAge2012,
+            position = "bottomright",
+            title = "Median Age<br>(2012): ")
+```
+
+```{r}
+popup <- paste0("GEOID: ", med.age.merge.12$GEOID, "<br>", "Median Age (2012):<br> ", med.age.merge.12$medAge2012, " years old")
+
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = med.age.merge.12$medAge2012)
+  
+leaflet() %>% 
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(data = med.age.merge.12,
+              fillColor = ~pal(medAge12$medAge2012),
+              fillOpacity = 0.7,
+              weight = 0.2,
+              smoothFactor = 0.2,
+              popup = popup) %>%
+  addLegend(pal = pal,
+            values = med.age.merge.12$medAge2012,
+            position = "bottomright",
+            title = "Median Age<br>(2012): ")
+```
+
+```{r}
+popup <- paste0("GEOID: ", med.age.merge.15$GEOID, "<br>", "Median Age (2015):<br> ", med.age.merge.15$medAge2015, " years old")
+
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = med.age.merge.15$medAge2015)
+  
+leaflet() %>% 
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(data = med.age.merge.15,
+              fillColor = ~pal(medAge15$medAge2015),
+              fillOpacity = 0.7,
+              weight = 0.2,
+              smoothFactor = 0.2,
+              popup = popup) %>%
+  addLegend(pal = pal,
+            values = med.age.merge.15$medAge2015,
+            position = "bottomright",
+            title = "Median Age<br>(2015): ")
+```
+
