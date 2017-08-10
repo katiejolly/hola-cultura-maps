@@ -26,7 +26,7 @@ med.age.merge.15 <- med.age.merge.15[med.age.merge.15$ALAND>0,]
 
 
 ```{r}
-key <- "322b2b42a6c7e168c44e1ab3a725a6d2f5abcaa9"
+key <- insert key here
 
 tracts <- tracts(state = "DC")
 ```
